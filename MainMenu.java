@@ -10,7 +10,7 @@ class MainMenu {
     public static void main(String[] args) {
         //Main loop
         //Interpreter interp = new Interpreter("sds");
-        Tokenize tokenizer = new Tokenize("set r0 to 13\nset r1 to r0\nadd r0 to r1\nprintln r1");
+        Tokenize tokenizer = new Tokenize("set r0 to 13\nset r1 to r0\nadd r0 to r1\nprintln r1\nend");
     
         //Tokenize
         ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens = tokenizer.tokenize();
@@ -167,6 +167,8 @@ public class Parser {
     //Parse in
     public void parse() {
         while (currentTokenIndex < tokens.size()) {
+            if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.END)
+                break;
             parseStatement();
         }
     }
