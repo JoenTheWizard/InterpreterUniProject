@@ -10,7 +10,7 @@ class MainMenu {
     public static void main(String[] args) {
         //Main loop
         //Interpreter interp = new Interpreter("sds");
-        Tokenize tokenizer = new Tokenize("set r0 to 13\nset r1 to r0\nadd 1 to r1\nprintln r1");
+        Tokenize tokenizer = new Tokenize("set r0 to 13\nset r1 to r0\nadd r0 to r1\nprintln r1");
     
         //Tokenize
         ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens = tokenizer.tokenize();
@@ -236,7 +236,18 @@ public class Parser {
 
     private void parseAddition() {
         consume(Tokenize.TOKENS.ADD);
-        int value = Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+
+        //Value to assign (can be an identifier or numerical)
+        int value = 0;
+        //If numerical
+        if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.NUMERICAL)
+            value = Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+        //If keyword
+        else if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.IDENTIFIER) {
+            String val = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+            value = variables.get(val);
+        }
+
         consume(Tokenize.TOKENS.TO);
 
         //Get variable to add
