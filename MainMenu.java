@@ -10,7 +10,7 @@ class MainMenu {
     public static void main(String[] args) {
         //Main loop
         //Interpreter interp = new Interpreter("sds");
-        Tokenize tokenizer = new Tokenize("set r1 to 15\nprintln r1");
+        Tokenize tokenizer = new Tokenize("set r0 to 13\nset r1 to r0\nadd 1 to r1\nprintln r1");
     
         //Tokenize
         ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens = tokenizer.tokenize();
@@ -19,11 +19,6 @@ class MainMenu {
         Parser parser = new Parser(tokens);
 
         parser.parse();
-        // System.out.println("Number of tokens: " + tokens.size());
-
-        // for (Map.Entry<Tokenize.TOKENS, String> token : tokens) {
-        //    System.out.println(token.getKey() + " " + token.getValue());
-        // }
     }
 }
 
@@ -183,6 +178,9 @@ public class Parser {
         else if (match(Tokenize.TOKENS.PRINTLN)) {
             parsePrintln();
         }
+        else if (match(Tokenize.TOKENS.ADD)) {
+            parseAddition();
+        }
         else if (match(Tokenize.TOKENS.NEWLINE)) {
             currentTokenIndex++; //Means we ignore
         }
@@ -218,11 +216,37 @@ public class Parser {
         consume(Tokenize.TOKENS.SET);
         String identifier = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
         consume(Tokenize.TOKENS.TO);
-        int value = Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+
+        //Value to assign (can be an identifier or numerical)
+        int value = 0; //Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+
+        //If numerical
+        if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.NUMERICAL)
+            value = Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+        //If keyword
+        else if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.IDENTIFIER) {
+            String val = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+            value = variables.get(val);
+        }
 
         //Generate an AST node for the assignment statement (Debugging)
         variables.put(identifier, value);
         System.out.println("Assign " + identifier + " = " + value);
+    }
+
+    private void parseAddition() {
+        consume(Tokenize.TOKENS.ADD);
+        int value = Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+        consume(Tokenize.TOKENS.TO);
+
+        //Get variable to add
+        String added = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+        if (!variables.containsKey(added)) {
+            error("Variable '" + added + "' has not been assigned a value");
+        }
+
+        //Set the value within the variables hashmap
+        variables.put(added, variables.get(added) + value);
     }
 
     private void parsePrintln() {
