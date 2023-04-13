@@ -1,0 +1,11 @@
+// Task1c all task 1 verbs Basic Test
+set fred to 10
+set busby to 20
+set r2 to 0
+add busby to r2
+add 2 to r2
+subtract 1 from r2
+subtract fred from r2
+print 'Final value is:'
+println r2
+end

@@ -1,0 +1,5 @@
+// min.txt - minimum example from lecture
+set r1 to 12
+add 1 to r1 
+println r1
+end

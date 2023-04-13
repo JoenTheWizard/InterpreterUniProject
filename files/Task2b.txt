@@ -1,0 +1,13 @@
+// Task2b all task 2 verbs 
+set fred to 3
+set busby to 7
+set r2 to 30
+multiply busby by fred
+// note the result is in busby
+divide r2 by fred
+// note the result is in r2
+print 'Final value of r2    is:'
+println r2
+print 'Final value of busby is:'
+println busby
+end

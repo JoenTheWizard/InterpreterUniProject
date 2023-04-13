@@ -1,0 +1,12 @@
+//  task3a 
+println 'junk -dont show'
+println cls
+set xx to -66
+add 100 to xx
+set smith to -99
+add -1 to smith
+print 'Final smith is:'
+println smith
+print 'Final xx is:'
+println xx
+end

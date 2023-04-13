@@ -1,0 +1,8 @@
+//  task3b - should have error
+println 'junk'
+println cls
+set xx to -66
+add 12 to nv
+print 'Final xx is:'
+println xx
+end

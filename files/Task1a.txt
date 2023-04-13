@@ -1,0 +1,8 @@
+// Task1a Simple add 2 numbers program
+println 'Task1a'
+set r1 to 10
+set r2 to 20
+add r1 to r2
+print 'sum of 10 and 20 is '
+println r2
+end

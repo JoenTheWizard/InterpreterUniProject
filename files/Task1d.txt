@@ -1,0 +1,6 @@
+// task1d This should fail
+set fred to 10
+add 5 to 9
+print 'Final value is:'
+println fred
+end

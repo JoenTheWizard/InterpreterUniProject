@@ -1,0 +1,8 @@
+// task4b
+set r1 to 10
+if r1 > 10 then 
+println 'dont print this'
+endif
+println 'ending'
+end
+

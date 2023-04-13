@@ -1,0 +1,8 @@
+// Simple if task4a
+set r1 to 9
+if r1 < 10 then
+println 'yes print this'
+endif
+println 'ending'
+end
+

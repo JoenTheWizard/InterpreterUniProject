@@ -1,0 +1,13 @@
+// task5ma
+println 'task5ma'
+set r1 to 8
+while r1 > 0 do 
+	print 'r1 is:'
+	println r1
+	add -2 to r1
+endwhile
+print 'r1 is:'
+println r1
+println 'ending'
+end
+

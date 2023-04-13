@@ -1,0 +1,10 @@
+//  task Mandatory Test b
+set fred to 16
+set busby to 22
+set r2 to fred
+add busby to r2
+set fred to 10
+subtract fred from r2
+print 'Final value is:'
+println r2
+end

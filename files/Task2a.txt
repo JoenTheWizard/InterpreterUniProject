@@ -1,0 +1,8 @@
+// Simple multiply 2 numbers program
+set r1 to 10
+set r2 to 20
+multiply r1 by r2 
+// note the result is in r1
+print 'product of 10 and 20 is '
+println r1
+end

@@ -1,0 +1,15 @@
+// task3Md - should handle squat (not diddly squat)
+set fred to 16
+set busby to 22
+set r2 to 5
+add 4 to squat
+add busby to r2
+add 100 to fred 
+subtract r2 from fred
+set v2 to -999
+print 'Final value1 is:'
+println fred
+print 'Final value2 is:'
+println v2
+
+end

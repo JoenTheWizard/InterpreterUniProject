@@ -1,0 +1,10 @@
+//  task1 Mandatory Test c - should fail line
+set fred to 16
+set busby to 22
+add 3 from ss
+add busby to r2
+set fred to 10
+subtract fred from r2
+print 'Final value is:'
+println r2
+end

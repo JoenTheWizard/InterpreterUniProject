@@ -1,0 +1,14 @@
+// task3ma all task 2 verbs
+set a to 4
+set busby to 12
+set r2 to 40
+multiply busby by a
+add 2 to busby
+// note the result is in busby
+divide r2 by a
+// note the result is in r2
+print 'Final value of r2    is:'
+println r2
+print 'Final value of busby is:'
+println busby
+end

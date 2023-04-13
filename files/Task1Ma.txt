@@ -1,0 +1,7 @@
+// Task1Ma Simple add 2 numbers program
+set zix to 10
+set r2 to 20
+add zix to r2
+print 'sum of 10 and 20 is '
+println r2
+end
