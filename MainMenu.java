@@ -228,6 +228,9 @@ public class Parser {
         //If keyword
         else if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.IDENTIFIER) {
             String val = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+            if (!variables.containsKey(val)) {
+                error("Variable '" + val + "' has not been assigned a value");
+            }
             value = variables.get(val);
         }
 
@@ -247,6 +250,9 @@ public class Parser {
         //If keyword
         else if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.IDENTIFIER) {
             String val = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+            if (!variables.containsKey(val)) {
+                error("Variable '" + val + "' has not been assigned a value");
+            }
             value = variables.get(val);
         }
 
