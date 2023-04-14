@@ -5,20 +5,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 class MainMenu {
     public static void main(String[] args) {
         //Main loop
         //Interpreter interp = new Interpreter("sds");
-        Tokenize tokenizer = new Tokenize("set r0 to 13\nset r1 to r0\nadd r0 to r1\nprintln r1\nend");
+        // Tokenize tokenizer = new Tokenize("//test program\nset r0 to 13\nset r1 to r0\nadd r0 to r1\nprintln r1\nend");
     
-        //Tokenize
-        ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens = tokenizer.tokenize();
+        // //Tokenize
+        // ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens = tokenizer.tokenize();
 
-        //Parsing phase
-        Parser parser = new Parser(tokens);
+        // //Parsing phase
+        // Parser parser = new Parser(tokens);
 
-        parser.parse();
+        // parser.parse();
+
+        Interpreter interp = new Interpreter("maintest.sail2023");
+        interp.execute();
     }
 }
 
@@ -27,6 +33,29 @@ class Interpreter {
     public String file;
     public Interpreter(String file) {
         this.file = file;
+    }
+
+    //Execute the file
+    public void execute() {
+        String code = "";
+        //Read the code
+        try {
+            code = new String(Files.readAllBytes(Paths.get(file)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Tokenize tokenizer = new Tokenize(code);
+    
+        //Tokenize
+        ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens = tokenizer.tokenize();
+
+        //Parsing phase
+        Parser parser = new Parser(tokens);
+
+        parser.parse();
+
+        //parser.debug();
     }
 }
 
@@ -40,13 +69,16 @@ public class Tokenize {
         PLUS, MINUS, TIMES, DIVIDE,
         NUMERICAL, IDENTIFIER,
         O_BRACKET, C_BRACKET,
-        NEWLINE,
+        NEWLINE, GREATER, SMALLER,
+        GREATER_EQ, SMALLER_EQ, EQUALS,
+        STRING_LITERAL,
         //Reserved keywords string values
-        TO, FROM,
+        TO, FROM, DO,
         SET, ADD, SUBTRACT,
         PRINT, PRINTLN,
+        IF, ENDIF,
         //Misc
-        END, COMMENT
+        END, COMMENT, EOF
     }
 
     public Tokenize(String s) {
@@ -61,9 +93,12 @@ public class Tokenize {
         tokenTypesKeywods.put("add", TOKENS.ADD);
         tokenTypesKeywods.put("subtract", TOKENS.SUBTRACT);
         tokenTypesKeywods.put("to", TOKENS.TO);
+        tokenTypesKeywods.put("do", TOKENS.DO);
         tokenTypesKeywods.put("from", TOKENS.FROM);
         tokenTypesKeywods.put("println", TOKENS.PRINTLN);
         tokenTypesKeywods.put("print", TOKENS.PRINT);
+        tokenTypesKeywods.put("if", TOKENS.IF);
+        tokenTypesKeywods.put("endif", TOKENS.ENDIF);
         tokenTypesKeywods.put("end", TOKENS.END);
 
         for (Map.Entry<String, TOKENS> entry : tokenTypesKeywods.entrySet()) {
@@ -86,6 +121,8 @@ public class Tokenize {
         tokenTypes.put('/', TOKENS.DIVIDE);
         tokenTypes.put('(', TOKENS.O_BRACKET);
         tokenTypes.put(')', TOKENS.C_BRACKET);
+        tokenTypes.put('<', TOKENS.SMALLER);
+        tokenTypes.put('>', TOKENS.GREATER);
         tokenTypes.put('\n', TOKENS.NEWLINE);
 
         //Store index
@@ -98,9 +135,18 @@ public class Tokenize {
             char ch = str.charAt(index);
 
             //Check if token is a number value
-            if (Character.isDigit(ch)) {
+            if (Character.isDigit(ch) || ch == '-') {
                 //Init numeric value string
                 StringBuilder val = new StringBuilder();
+                if (ch == '-') {
+                    val.append(ch);
+                    index++;
+                    //Check if the next value after the negative sign is numerical
+                    if (!Character.isDigit(str.charAt(index)))
+                        throw new RuntimeException("Error: Invalid negative value parsed in");
+                    
+                    ch = str.charAt(index);
+                }
                 //Traverse
                 while (Character.isDigit(ch)) {
                     val.append(ch);
@@ -129,6 +175,35 @@ public class Tokenize {
                 
                 tokens.add(new AbstractMap.SimpleEntry<>(checkKeywords(val.toString()), val.toString()));
             }
+            //Comments
+            else if (ch == '/' && index + 1 < str.length() && str.charAt(index + 1) == '/') {
+                while (ch != '\n') {
+                    index++;
+                    if (index >= str.length())
+                        break;
+                    ch = str.charAt(index);
+                }
+                //Don't add as a token for the parser for comments
+                continue;
+            }
+            else if (ch == '\'') {
+                //String literal
+                StringBuilder val = new StringBuilder();
+                boolean isEscapeChar = false;
+                index++;
+                ch = str.charAt(index);
+                //Traverse until the end of the string literal
+                while (ch != '\'' || isEscapeChar) {
+                    isEscapeChar = ch == '\\' && !isEscapeChar ? true : false;
+                    val.append(ch);
+                    index++;
+                    if (index >= str.length())
+                        throw new RuntimeException("Error: String literal is not terminated");
+                    ch = str.charAt(index);
+                }
+                index++;
+                tokens.add(new AbstractMap.SimpleEntry<>(TOKENS.STRING_LITERAL, val.toString()));
+            }
             //Singular character identifiers
             else if (tokenTypes.containsKey(ch)) {
                 //Get the token type from the map
@@ -142,10 +217,8 @@ public class Tokenize {
             }
         }
 
-        // //Print each token value (for debugging)
-        // for (Map.Entry<TOKENS, String> t : tokens) {
-        //     System.out.println(t.getKey().name() + " " + t.getValue());
-        // }
+        //End of file
+        tokens.add(new AbstractMap.SimpleEntry<>(TOKENS.EOF, ""));
 
         return tokens;
     }
@@ -178,7 +251,10 @@ public class Parser {
             parseAssignment();
         } 
         else if (match(Tokenize.TOKENS.PRINTLN)) {
-            parsePrintln();
+            parsePrint(true);
+        }
+        else if (match(Tokenize.TOKENS.PRINT)) {
+            parsePrint(false);
         }
         else if (match(Tokenize.TOKENS.ADD)) {
             parseAddition();
@@ -236,9 +312,10 @@ public class Parser {
 
         //Generate an AST node for the assignment statement (Debugging)
         variables.put(identifier, value);
-        System.out.println("Assign " + identifier + " = " + value);
+        //System.out.println("Assign " + identifier + " = " + value);
     }
 
+    //Parse in addition
     private void parseAddition() {
         consume(Tokenize.TOKENS.ADD);
 
@@ -268,15 +345,40 @@ public class Parser {
         variables.put(added, variables.get(added) + value);
     }
 
-    private void parsePrintln() {
-        consume(Tokenize.TOKENS.PRINTLN);
-        String stdout = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+    //Parses either print or println
+    private void parsePrint(boolean newLine) {
+        // consume(Tokenize.TOKENS.PRINTLN);
+        // String stdout = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
 
-        if (!variables.containsKey(stdout)) {
-            error("Variable '" + stdout + "' has not been assigned a value");
+        // if (!variables.containsKey(stdout)) {
+        //     error("Variable '" + stdout + "' has not been assigned a value");
+        // }
+
+        // System.out.println(variables.get(stdout));
+
+        consume(newLine ? Tokenize.TOKENS.PRINTLN : Tokenize.TOKENS.PRINT);
+
+        List<String> output = new ArrayList<>();
+        while (true) {
+            Tokenize.TOKENS token = tokens.get(currentTokenIndex).getKey();
+            if (token == Tokenize.TOKENS.STRING_LITERAL) {
+                output.add(consume(Tokenize.TOKENS.STRING_LITERAL).getValue());
+            } 
+            else if (token == Tokenize.TOKENS.IDENTIFIER) {
+                String varName = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+                if (!variables.containsKey(varName)) {
+                    error("Variable '" + varName + "' has not been assigned a value");
+                }
+                output.add(variables.get(varName).toString());
+            }
+            else if (token == Tokenize.TOKENS.PLUS) {
+                consume(Tokenize.TOKENS.PLUS);
+            }
+            else {
+                break;
+            }
         }
-
-        System.out.println(variables.get(stdout));
+       System.out.print(newLine ? String.join("", output) + "\n" : String.join("", output));
     }
 
     //Match

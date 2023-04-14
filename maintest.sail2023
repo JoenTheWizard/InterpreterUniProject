@@ -1,0 +1,18 @@
+set r3 to 14 //test program
+set r0 to 13
+set r1 to r0
+add r0 to r1
+println r1
+
+set a1 to -5
+add 3 to a1
+
+println 'Value is: ' a1
+
+set a1 to 10
+set a2 to 30
+print 'The addition of ' a1 ' and ' a2 ' is '
+add a1 to a2
+println a2
+
+end
