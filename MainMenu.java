@@ -76,7 +76,7 @@ public class Tokenize {
         TO, FROM, DO,
         SET, ADD, SUBTRACT,
         PRINT, PRINTLN,
-        IF, ENDIF,
+        IF, ENDIF, AND, OR,
         //Misc
         END, COMMENT, EOF
     }
@@ -175,6 +175,16 @@ public class Tokenize {
                 
                 tokens.add(new AbstractMap.SimpleEntry<>(checkKeywords(val.toString()), val.toString()));
             }
+            //AND bool
+            else if (ch == '&' && index + 1 < str.length() && str.charAt(index + 1) == '&') {
+                index += 2;
+                tokens.add(new AbstractMap.SimpleEntry<>(TOKENS.AND, "&&"));
+            }
+            //OR bool
+            else if (ch == '|' && index + 1 < str.length() && str.charAt(index + 1) == '|') {
+                index += 2;
+                tokens.add(new AbstractMap.SimpleEntry<>(TOKENS.OR, "||"));
+            }
             //Comments
             else if (ch == '/' && index + 1 < str.length() && str.charAt(index + 1) == '/') {
                 while (ch != '\n') {
@@ -258,6 +268,10 @@ public class Parser {
         }
         else if (match(Tokenize.TOKENS.ADD)) {
             parseAddition();
+        }
+        else if (match(Tokenize.TOKENS.IF)) {
+            //Format of IF statement: if <condition> do ... endif
+
         }
         else if (match(Tokenize.TOKENS.NEWLINE)) {
             currentTokenIndex++; //Means we ignore
@@ -380,6 +394,12 @@ public class Parser {
         }
        System.out.print(newLine ? String.join("", output) + "\n" : String.join("", output));
     }
+
+    //== If statement ==
+    private void parseIfStatement() {
+        consume(Tokenize.TOKENS.IF);
+    }
+
 
     //Match
     private boolean match(Tokenize.TOKENS expected) {
