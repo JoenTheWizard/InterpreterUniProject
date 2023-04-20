@@ -406,6 +406,7 @@ public class Parser {
         consume(Tokenize.TOKENS.IF);
     }
 
+    //This is so we can parse in conditional statements (if, while, for etc)
     public Boolean parseTokensReturnBool(ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens) {
         //Initialize the operator stack
         List<Object> stack = new ArrayList<>();
