@@ -56,6 +56,12 @@ class Interpreter {
         parser.parse();
 
         //parser.debug();
+
+        // Tokenize t = new Tokenize("3 > 2 && (2 < 1 || 4 > 3)");
+        // Parser parser = new Parser(t.tokenize());
+
+        // Boolean res = parser.parseTokensReturnBool(t.tokenize());
+        // System.out.println(res);
     }
 }
 
@@ -400,6 +406,38 @@ public class Parser {
         consume(Tokenize.TOKENS.IF);
     }
 
+    public Boolean parseTokensReturnBool(ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens) {
+        //Initialize the operator stack
+        List<Object> stack = new ArrayList<>();
+
+        //Parse the tokens
+        while (!tokens.isEmpty()) {
+            Map.Entry<Tokenize.TOKENS, String> token = tokens.remove(0); //Pops the stack and get return
+
+            if (token.getKey() == Tokenize.TOKENS.NUMERICAL)
+                stack.add(Integer.parseInt(token.getValue()));
+            else if (token.getKey() == Tokenize.TOKENS.SMALLER || token.getKey() == Tokenize.TOKENS.GREATER) {
+                int left = (Integer)stack.remove(stack.size() - 1);
+                int right = Integer.parseInt(tokens.remove(0).getValue());
+
+                stack.add(token.getKey() == Tokenize.TOKENS.SMALLER ? left < right : left > right);
+            }
+            else if (token.getKey() == Tokenize.TOKENS.AND || token.getKey() == Tokenize.TOKENS.OR) {
+                if (stack.size() >= 1 && tokens.size() >= 1) {
+                    boolean left  = (Boolean)stack.remove(stack.size() - 1);
+                    Boolean right = parseTokensReturnBool(tokens);
+
+                    stack.add(token.getKey() == Tokenize.TOKENS.AND ? left && right : left || right);
+                }
+            }
+            else if (token.getKey() == Tokenize.TOKENS.O_BRACKET)
+                stack.add(parseTokensReturnBool(tokens));
+            else if (token.getKey() == Tokenize.TOKENS.C_BRACKET)
+                break;
+        }
+
+        return stack.isEmpty() ? null : (Boolean)stack.remove(stack.size() - 1);
+    }
 
     //Match
     private boolean match(Tokenize.TOKENS expected) {
