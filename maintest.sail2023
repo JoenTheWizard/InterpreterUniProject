@@ -15,4 +15,8 @@ print 'The addition of ' a1 ' and ' a2 ' is '
 add a1 to a2
 println a2
 
+if 3 > 2 && (2 < 1 || 3 < 2) do
+
+endif
+
 end

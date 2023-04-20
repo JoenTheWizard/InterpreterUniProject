@@ -277,7 +277,7 @@ public class Parser {
         }
         else if (match(Tokenize.TOKENS.IF)) {
             //Format of IF statement: if <condition> do ... endif
-
+            parseIfStatement();
         }
         else if (match(Tokenize.TOKENS.NEWLINE)) {
             currentTokenIndex++; //Means we ignore
@@ -401,9 +401,49 @@ public class Parser {
        System.out.print(newLine ? String.join("", output) + "\n" : String.join("", output));
     }
 
+    private Boolean checkIfCondition(Map.Entry<Tokenize.TOKENS, String> toks) {
+        return toks.getKey() == Tokenize.TOKENS.NUMERICAL || toks.getKey() == Tokenize.TOKENS.GREATER ||
+            toks.getKey() == Tokenize.TOKENS.SMALLER || toks.getKey() == Tokenize.TOKENS.GREATER_EQ || 
+            toks.getKey() == Tokenize.TOKENS.SMALLER_EQ || toks.getKey() == Tokenize.TOKENS.AND || 
+            toks.getKey() == Tokenize.TOKENS.OR || toks.getKey() == Tokenize.TOKENS.O_BRACKET || 
+            toks.getKey() == Tokenize.TOKENS.C_BRACKET;
+    }
+
     //== If statement ==
     private void parseIfStatement() {
         consume(Tokenize.TOKENS.IF);
+
+        //Parse condition
+        ArrayList<Map.Entry<Tokenize.TOKENS, String>> condition = new ArrayList<>();
+
+        //Construct condition
+        while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.DO) {
+            Map.Entry<Tokenize.TOKENS, String> toks = tokens.get(currentTokenIndex);
+            if (toks.getKey() == Tokenize.TOKENS.EOF || toks.getKey() == Tokenize.TOKENS.ENDIF)
+                error("Error: Improper if condition initalization");
+
+            if (checkIfCondition(toks)) {
+                condition.add(toks);
+                currentTokenIndex++;
+            } else
+                error("Error: Improper if condition statement");
+        }
+        consume(Tokenize.TOKENS.DO);
+
+        //Now to look for 'endif' keyword
+        int endifIndex = 0;
+        int ifBlock = currentTokenIndex;
+
+        while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDIF) {
+            Map.Entry<Tokenize.TOKENS, String> toks = tokens.get(currentTokenIndex);
+            if (toks.getKey() == Tokenize.TOKENS.EOF)
+                error("Error: If condition not terminated");
+            
+            currentTokenIndex++;
+        }
+        consume(Tokenize.TOKENS.ENDIF);
+
+        System.out.println("IF CONDITION IS:" + parseTokensReturnBool(condition));
     }
 
     //This is so we can parse in conditional statements (if, while, for etc)
