@@ -387,7 +387,7 @@ public class Parser {
             else if (token == Tokenize.TOKENS.IDENTIFIER) {
                 String varName = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
                 if (!variables.containsKey(varName)) {
-                    error("Variable '" + varName + "' has not been assigned a value");
+                    error("Error: Variable '" + varName + "' has not been assigned a value");
                 }
                 output.add(variables.get(varName).toString());
             }
@@ -401,12 +401,12 @@ public class Parser {
        System.out.print(newLine ? String.join("", output) + "\n" : String.join("", output));
     }
 
-    private Boolean checkIfCondition(Map.Entry<Tokenize.TOKENS, String> toks) {
-        return toks.getKey() == Tokenize.TOKENS.NUMERICAL || toks.getKey() == Tokenize.TOKENS.GREATER ||
-            toks.getKey() == Tokenize.TOKENS.SMALLER || toks.getKey() == Tokenize.TOKENS.GREATER_EQ || 
-            toks.getKey() == Tokenize.TOKENS.SMALLER_EQ || toks.getKey() == Tokenize.TOKENS.AND || 
-            toks.getKey() == Tokenize.TOKENS.OR || toks.getKey() == Tokenize.TOKENS.O_BRACKET || 
-            toks.getKey() == Tokenize.TOKENS.C_BRACKET;
+    private Boolean checkIfCondition(Tokenize.TOKENS toks) {
+        return toks == Tokenize.TOKENS.NUMERICAL || toks == Tokenize.TOKENS.GREATER ||
+            toks == Tokenize.TOKENS.SMALLER || toks == Tokenize.TOKENS.GREATER_EQ || 
+            toks == Tokenize.TOKENS.SMALLER_EQ || toks == Tokenize.TOKENS.AND || 
+            toks == Tokenize.TOKENS.OR || toks == Tokenize.TOKENS.O_BRACKET || 
+            toks == Tokenize.TOKENS.C_BRACKET || toks == Tokenize.TOKENS.IDENTIFIER;
     }
 
     //== If statement ==
@@ -422,7 +422,7 @@ public class Parser {
             if (toks.getKey() == Tokenize.TOKENS.EOF || toks.getKey() == Tokenize.TOKENS.ENDIF)
                 error("Error: Improper if condition initalization");
 
-            if (checkIfCondition(toks)) {
+            if (checkIfCondition(toks.getKey())) {
                 condition.add(toks);
                 currentTokenIndex++;
             } else
@@ -430,20 +430,16 @@ public class Parser {
         }
         consume(Tokenize.TOKENS.DO);
 
-        //Now to look for 'endif' keyword
-        int endifIndex = 0;
-        int ifBlock = currentTokenIndex;
-
+        //Obtain condition
+        Boolean ifCondition = parseTokensReturnBool(condition);
+        //If the condition is true, then we parse the statement
         while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDIF) {
-            Map.Entry<Tokenize.TOKENS, String> toks = tokens.get(currentTokenIndex);
-            if (toks.getKey() == Tokenize.TOKENS.EOF)
-                error("Error: If condition not terminated");
-            
-            currentTokenIndex++;
+            if (ifCondition)
+                parseStatement();
+            else
+                currentTokenIndex++;
         }
         consume(Tokenize.TOKENS.ENDIF);
-
-        System.out.println("IF CONDITION IS:" + parseTokensReturnBool(condition));
     }
 
     //This is so we can parse in conditional statements (if, while, for etc)
@@ -457,6 +453,13 @@ public class Parser {
 
             if (token.getKey() == Tokenize.TOKENS.NUMERICAL)
                 stack.add(Integer.parseInt(token.getValue()));
+            else if (token.getKey() == Tokenize.TOKENS.IDENTIFIER) { //For variables
+                String varName = token.getValue();
+                if (!variables.containsKey(varName)) {
+                    error("Error: Variable '" + varName + "' has not been assigned a value");
+                }
+                stack.add(variables.get(varName));
+            }
             else if (token.getKey() == Tokenize.TOKENS.SMALLER || token.getKey() == Tokenize.TOKENS.GREATER) {
                 int left = (Integer)stack.remove(stack.size() - 1);
                 int right = Integer.parseInt(tokens.remove(0).getValue());
