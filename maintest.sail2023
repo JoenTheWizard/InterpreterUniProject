@@ -44,4 +44,8 @@ while v1 < 10 do
 
 endwhile
 
+set y1 to 10
+subtract 2 from y1
+println y1
+
 end
