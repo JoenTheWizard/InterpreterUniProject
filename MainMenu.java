@@ -83,6 +83,7 @@ public class Tokenize {
         SET, ADD, SUBTRACT,
         PRINT, PRINTLN,
         IF, ENDIF, AND, OR,
+        WHILE, ENDWHILE,
         //Misc
         END, COMMENT, EOF
     }
@@ -105,6 +106,8 @@ public class Tokenize {
         tokenTypesKeywods.put("print", TOKENS.PRINT);
         tokenTypesKeywods.put("if", TOKENS.IF);
         tokenTypesKeywods.put("endif", TOKENS.ENDIF);
+        tokenTypesKeywods.put("while", TOKENS.WHILE);
+        tokenTypesKeywods.put("endwhile", TOKENS.ENDWHILE);
         tokenTypesKeywods.put("end", TOKENS.END);
 
         for (Map.Entry<String, TOKENS> entry : tokenTypesKeywods.entrySet()) {
@@ -190,6 +193,11 @@ public class Tokenize {
             else if (ch == '|' && index + 1 < str.length() && str.charAt(index + 1) == '|') {
                 index += 2;
                 tokens.add(new AbstractMap.SimpleEntry<>(TOKENS.OR, "||"));
+            }
+            //EQUALS bool
+            else if (ch == '=' && index + 1 < str.length() && str.charAt(index + 1) == '=') {
+                index += 2;
+                tokens.add(new AbstractMap.SimpleEntry<>(TOKENS.EQUALS, "=="));
             }
             //Comments
             else if (ch == '/' && index + 1 < str.length() && str.charAt(index + 1) == '/') {
@@ -278,6 +286,10 @@ public class Parser {
         else if (match(Tokenize.TOKENS.IF)) {
             //Format of IF statement: if <condition> do ... endif
             parseIfStatement();
+        }
+        else if (match(Tokenize.TOKENS.WHILE)) {
+            //Format of WHILE statement: while <condition> do ... endwhile
+            parseWhileStatement();
         }
         else if (match(Tokenize.TOKENS.NEWLINE)) {
             currentTokenIndex++; //Means we ignore
@@ -406,7 +418,8 @@ public class Parser {
             toks == Tokenize.TOKENS.SMALLER || toks == Tokenize.TOKENS.GREATER_EQ || 
             toks == Tokenize.TOKENS.SMALLER_EQ || toks == Tokenize.TOKENS.AND || 
             toks == Tokenize.TOKENS.OR || toks == Tokenize.TOKENS.O_BRACKET || 
-            toks == Tokenize.TOKENS.C_BRACKET || toks == Tokenize.TOKENS.IDENTIFIER;
+            toks == Tokenize.TOKENS.C_BRACKET || toks == Tokenize.TOKENS.IDENTIFIER ||
+            toks == Tokenize.TOKENS.EQUALS;
     }
 
     //== If statement ==
@@ -442,6 +455,41 @@ public class Parser {
         consume(Tokenize.TOKENS.ENDIF);
     }
 
+    //While statement
+     private void parseWhileStatement() {
+        consume(Tokenize.TOKENS.WHILE);
+
+        //Parse condition
+        ArrayList<Map.Entry<Tokenize.TOKENS, String>> condition = new ArrayList<>();
+
+        //Construct condition
+        while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.DO) {
+            Map.Entry<Tokenize.TOKENS, String> toks = tokens.get(currentTokenIndex);
+            if (toks.getKey() == Tokenize.TOKENS.EOF || toks.getKey() == Tokenize.TOKENS.ENDWHILE)
+                error("Error: Improper if condition initalization");
+
+            if (checkIfCondition(toks.getKey())) {
+                condition.add(toks);
+                currentTokenIndex++;
+            } else
+                error("Error: Improper if condition statement");
+        }
+        consume(Tokenize.TOKENS.DO);
+
+        //If the condition is true, then we parse the statement
+        Boolean whileCondition = parseTokensReturnBool(new ArrayList<>(condition));
+        while (whileCondition) {
+            int whileIndex = currentTokenIndex;
+            while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDWHILE)
+                parseStatement();
+            
+            whileCondition = parseTokensReturnBool(new ArrayList<>(condition));
+            if (whileCondition) //Jump to block if still true
+                currentTokenIndex = whileIndex;
+        }
+        consume(Tokenize.TOKENS.ENDWHILE);
+    }
+
     //This is so we can parse in conditional statements (if, while, for etc)
     public Boolean parseTokensReturnBool(ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens) {
         //Initialize the operator stack
@@ -460,11 +508,13 @@ public class Parser {
                 }
                 stack.add(variables.get(varName));
             }
-            else if (token.getKey() == Tokenize.TOKENS.SMALLER || token.getKey() == Tokenize.TOKENS.GREATER) {
+            else if (token.getKey() == Tokenize.TOKENS.SMALLER || token.getKey() == Tokenize.TOKENS.GREATER
+                    || token.getKey() == Tokenize.TOKENS.EQUALS) {
                 int left = (Integer)stack.remove(stack.size() - 1);
                 int right = Integer.parseInt(tokens.remove(0).getValue());
 
-                stack.add(token.getKey() == Tokenize.TOKENS.SMALLER ? left < right : left > right);
+                stack.add(token.getKey() == Tokenize.TOKENS.SMALLER ? left < right :
+                          token.getKey() == Tokenize.TOKENS.GREATER ? left > right : left == right);
             }
             else if (token.getKey() == Tokenize.TOKENS.AND || token.getKey() == Tokenize.TOKENS.OR) {
                 if (stack.size() >= 1 && tokens.size() >= 1) {

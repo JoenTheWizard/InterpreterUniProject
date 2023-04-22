@@ -26,4 +26,22 @@ if a2 > 39 do
     endif
 endif
 
+set v1 to 1
+
+while v1 < 10 do
+    add 1 to v1
+    if v1 == 2 do  
+        println v1 ' is at TWO'
+    endif
+
+    //Separate loop
+    set t1 to 0
+    while t1 < 5 do 
+        add 1 to t1
+        print t1 ' '
+    endwhile
+    println
+
+endwhile
+
 end
