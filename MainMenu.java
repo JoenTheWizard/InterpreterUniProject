@@ -79,7 +79,7 @@ public class Tokenize {
         GREATER_EQ, SMALLER_EQ, EQUALS,
         STRING_LITERAL,
         //Reserved keywords string values
-        TO, FROM, DO, BY,
+        TO, FROM, DO, BY, INTO,
         SET, ADD, SUBTRACT, MULTIPLY,
         PRINT, PRINTLN,
         IF, ENDIF, AND, OR,
@@ -100,9 +100,11 @@ public class Tokenize {
         tokenTypesKeywods.put("add", TOKENS.ADD);
         tokenTypesKeywods.put("subtract", TOKENS.SUBTRACT);
         tokenTypesKeywods.put("multiply", TOKENS.MULTIPLY);
+        tokenTypesKeywods.put("divide", TOKENS.DIVIDE);
         tokenTypesKeywods.put("to", TOKENS.TO);
         tokenTypesKeywods.put("do", TOKENS.DO);
         tokenTypesKeywods.put("by", TOKENS.BY);
+        tokenTypesKeywods.put("into", TOKENS.INTO);
         tokenTypesKeywods.put("from", TOKENS.FROM);
         tokenTypesKeywods.put("println", TOKENS.PRINTLN);
         tokenTypesKeywods.put("print", TOKENS.PRINT);
@@ -288,6 +290,12 @@ public class Parser {
         else if (match(Tokenize.TOKENS.SUBTRACT)) {
             parseSubtraction();
         }
+        else if (match(Tokenize.TOKENS.MULTIPLY)) {
+            parseMultiplyOrDivide(false);
+        }
+        else if (match(Tokenize.TOKENS.DIVIDE)) {
+            parseMultiplyOrDivide(true);
+        }
         else if (match(Tokenize.TOKENS.IF)) {
             //Format of IF statement: if <condition> do ... endif
             parseIfStatement();
@@ -410,6 +418,34 @@ public class Parser {
 
         //Set the value within the variables hashmap
         variables.put(added, variables.get(added) - value);
+    }
+
+    public void parseMultiplyOrDivide(boolean divide) {
+        consume(divide ? Tokenize.TOKENS.DIVIDE : Tokenize.TOKENS.MULTIPLY);
+
+        int value = 0;
+
+        //Get variable to add
+        String added = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+        if (!variables.containsKey(added)) {
+            error("Variable '" + added + "' has not been assigned a value");
+        }
+
+        consume(divide ? Tokenize.TOKENS.INTO : Tokenize.TOKENS.BY);
+
+        //If numerical
+        if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.NUMERICAL)
+            value = Integer.parseInt(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+        //If keyword
+        else if (tokens.get(currentTokenIndex).getKey() == Tokenize.TOKENS.IDENTIFIER) {
+            String val = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
+            if (!variables.containsKey(val)) {
+                error("Variable '" + val + "' has not been assigned a value");
+            }
+            value = variables.get(val);
+        }
+
+        variables.put(added, divide ? variables.get(added) / value : variables.get(added) * value);
     }
 
     //Parses either print or println
