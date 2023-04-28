@@ -513,16 +513,23 @@ public class Parser {
 
         //If the condition is true, then we parse the statement
         Boolean whileCondition = parseTokensReturnBool(new ArrayList<>(condition));
-        while (whileCondition) {
-            int whileIndex = currentTokenIndex;
-            while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDWHILE)
-                parseStatement();
-            
-            whileCondition = parseTokensReturnBool(new ArrayList<>(condition));
-            if (whileCondition) //Jump to block if still true
-                currentTokenIndex = whileIndex;
+        if (whileCondition) {
+            while (whileCondition) {
+                int whileIndex = currentTokenIndex;
+                while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDWHILE)
+                    parseStatement();
+                
+                whileCondition = parseTokensReturnBool(new ArrayList<>(condition));
+                if (whileCondition) //Jump to block if still true
+                    currentTokenIndex = whileIndex;
+            }
+            consume(Tokenize.TOKENS.ENDWHILE);
         }
-        consume(Tokenize.TOKENS.ENDWHILE);
+        else { //If the condition is false then skip the statement
+            while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDWHILE)
+                currentTokenIndex++;
+            consume(Tokenize.TOKENS.ENDWHILE);
+        }
     }
 
     //This is so we can parse in conditional statements (if, while, for etc)
