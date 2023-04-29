@@ -466,7 +466,10 @@ public class Parser {
             Tokenize.TOKENS token = tokens.get(currentTokenIndex).getKey();
             if (token == Tokenize.TOKENS.STRING_LITERAL) {
                 output.add(consume(Tokenize.TOKENS.STRING_LITERAL).getValue());
-            } 
+            }
+            else if (token == Tokenize.TOKENS.NUMERICAL) {
+                output.add(consume(Tokenize.TOKENS.NUMERICAL).getValue());
+            }
             else if (token == Tokenize.TOKENS.IDENTIFIER) {
                 String varName = consume(Tokenize.TOKENS.IDENTIFIER).getValue();
                 if (!variables.containsKey(varName)) {

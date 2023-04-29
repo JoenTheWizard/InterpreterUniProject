@@ -60,5 +60,5 @@ multiply m1 by 5
 multiply m1 by m1
 println 'm1 is ' m1
 
-
+println 32
 end
