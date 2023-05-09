@@ -508,7 +508,7 @@ public class Parser {
         while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.DO) {
             Map.Entry<Tokenize.TOKENS, String> toks = tokens.get(currentTokenIndex);
             if (toks.getKey() == Tokenize.TOKENS.EOF || toks.getKey() == Tokenize.TOKENS.ENDIF)
-                error("Error: Improper if condition initalization");
+                error("Error: Improper if condition initialization");
 
             if (checkIfCondition(toks.getKey())) {
                 condition.add(toks);
@@ -521,13 +521,25 @@ public class Parser {
         //Obtain condition
         Boolean ifCondition = parseTokensReturnBool(condition);
         //If the condition is true, then we parse the statement
-        while (tokens.get(currentTokenIndex).getKey() != Tokenize.TOKENS.ENDIF) {
-            if (ifCondition)
-                parseStatement();
-            else
-                currentTokenIndex++;
+        int ifCounter = 1; //If nesting condition counter
+        while (ifCounter > 0) {
+            Tokenize.TOKENS currentToken = tokens.get(currentTokenIndex).getKey();
+            if (currentToken == Tokenize.TOKENS.ENDIF) {
+                ifCounter--;
+                if (ifCounter == 0) {
+                    consume(Tokenize.TOKENS.ENDIF);
+                }
+            } else if (currentToken == Tokenize.TOKENS.IF) {
+                ifCounter++;
+                parseIfStatement();
+            } else {
+                if (ifCondition) {
+                    parseStatement();
+                } else {
+                    currentTokenIndex++;
+                }
+            }
         }
-        consume(Tokenize.TOKENS.ENDIF);
     }
 
     //While statement

@@ -62,12 +62,25 @@ println 'm1 is ' m1
 
 set tt to 1
 
+//Ranged print
 while tt < 20 do
     if tt > 11 && tt < 19 do
         println 'ranged: ' tt
     endif
     add 1 to tt
 endwhile
+
+set yty to 6
+
+//If nesting
+if yty > 3 do
+    if yty > 5 do
+        println 'lol'
+        if yty > 10 do
+            println '!!'
+        endif
+    endif
+endif
 
 println 32
 end
