@@ -257,6 +257,12 @@ public class Parser {
     ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens;
     int currentTokenIndex;
     Map<String, Integer> variables; //The set of variables
+    private static final EnumSet<Tokenize.TOKENS> VALID_TOKENS = EnumSet.of(
+            Tokenize.TOKENS.NUMERICAL, Tokenize.TOKENS.GREATER, Tokenize.TOKENS.SMALLER,
+            Tokenize.TOKENS.GREATER_EQ, Tokenize.TOKENS.SMALLER_EQ, Tokenize.TOKENS.AND,
+            Tokenize.TOKENS.OR, Tokenize.TOKENS.O_BRACKET, Tokenize.TOKENS.C_BRACKET,
+            Tokenize.TOKENS.IDENTIFIER, Tokenize.TOKENS.EQUALS
+            );
 
     //Parser requires the tokens
     public Parser(ArrayList<Map.Entry<Tokenize.TOKENS, String>> tokens) {
@@ -488,12 +494,7 @@ public class Parser {
     }
 
     private Boolean checkIfCondition(Tokenize.TOKENS toks) {
-        return toks == Tokenize.TOKENS.NUMERICAL || toks == Tokenize.TOKENS.GREATER ||
-            toks == Tokenize.TOKENS.SMALLER || toks == Tokenize.TOKENS.GREATER_EQ || 
-            toks == Tokenize.TOKENS.SMALLER_EQ || toks == Tokenize.TOKENS.AND || 
-            toks == Tokenize.TOKENS.OR || toks == Tokenize.TOKENS.O_BRACKET || 
-            toks == Tokenize.TOKENS.C_BRACKET || toks == Tokenize.TOKENS.IDENTIFIER ||
-            toks == Tokenize.TOKENS.EQUALS;
+        return VALID_TOKENS.contains(toks);
     }
 
     //== If statement ==
