@@ -60,5 +60,14 @@ multiply m1 by 5
 multiply m1 by m1
 println 'm1 is ' m1
 
+set tt to 1
+
+while tt < 20 do
+    if tt > 11 && tt < 19 do
+        println 'ranged: ' tt
+    endif
+    add 1 to tt
+endwhile
+
 println 32
 end
