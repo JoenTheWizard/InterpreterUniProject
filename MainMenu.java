@@ -529,15 +529,16 @@ public class Parser {
                 if (ifCounter == 0) {
                     consume(Tokenize.TOKENS.ENDIF);
                 }
-            } else if (currentToken == Tokenize.TOKENS.IF) {
+            }
+            else if (currentToken == Tokenize.TOKENS.IF) {
                 ifCounter++;
                 parseIfStatement();
-            } else {
-                if (ifCondition) {
+            }
+            else {
+                if (ifCondition)
                     parseStatement();
-                } else {
+                else
                     currentTokenIndex++;
-                }
             }
         }
     }

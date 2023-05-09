@@ -70,10 +70,11 @@ while tt < 20 do
     add 1 to tt
 endwhile
 
-set yty to 6
+set yty to 12
 
 //If nesting
 if yty > 3 do
+    println 'awesome'
     if yty > 5 do
         println 'lol'
         if yty > 10 do
